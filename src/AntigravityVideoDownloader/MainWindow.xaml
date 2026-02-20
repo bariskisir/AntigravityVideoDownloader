@@ -1,0 +1,156 @@
+﻿<Window x:Class="AntigravityVideoDownloader.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:viewModels="clr-namespace:AntigravityVideoDownloader.ViewModels"
+        xmlns:converters="clr-namespace:AntigravityVideoDownloader.Converters"
+        mc:Ignorable="d"
+        Title="Antigravity Video Downloader" Height="500" Width="480"
+        MinHeight="350" MinWidth="400"
+        WindowStartupLocation="CenterScreen"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.FontWeight="Medium"
+        TextElement.FontSize="13"
+        FontFamily="{materialDesign:MaterialDesignFont}">
+    <Window.DataContext>
+        <viewModels:MainViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBox Grid.Row="0" 
+                 Text="{Binding VideoUrl, UpdateSourceTrigger=PropertyChanged}" 
+                 materialDesign:HintAssist.Hint="URLs (each on a new line)" 
+                 Style="{StaticResource MaterialDesignOutlinedTextBox}" 
+                 Margin="0,0,0,8" 
+                 AcceptsReturn="True" 
+                 TextWrapping="Wrap" 
+                 MinHeight="40" MaxHeight="80" 
+                 VerticalScrollBarVisibility="Auto" />
+
+        <Grid Grid.Row="1" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" Text="{Binding DownloadFolder}" IsReadOnly="True" materialDesign:HintAssist.Hint="Download Folder" Style="{StaticResource MaterialDesignOutlinedTextBox}" Margin="0,0,5,0" MinHeight="45" VerticalContentAlignment="Center" FontSize="14" Foreground="White" />
+            <Button Grid.Column="1" Content="📁" ToolTip="Browse Folder" Command="{Binding BrowseFolderCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" Height="45" Width="45" Padding="0"/>
+        </Grid>
+
+        <Button Grid.Row="2" Content="ADD / CHECK" Command="{Binding CheckOrAddVideoCommand}" IsEnabled="{Binding IsChecking, Converter={StaticResource InverseBooleanConverter}}" Margin="0,0,0,8" Height="35" />
+
+        <Border Grid.Row="3" Margin="0,0,0,8" Padding="10" Background="{DynamicResource MaterialDesignCardBackground}" CornerRadius="4" 
+                Visibility="{Binding VideoTitle, Converter={StaticResource StringToVisibilityConverter}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
+                <TextBlock Grid.Row="0" Text="{Binding VideoTitle}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,5" MaxHeight="40" TextTrimming="CharacterEllipsis"/>
+                
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableResolutions}" SelectedItem="{Binding SelectedResolution}" 
+                              materialDesign:HintAssist.Hint="Resolution" Margin="0,0,5,0" Height="30">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    
+                    <Button Grid.Column="1" Content="ADD" Command="{Binding AddSingleToQueueCommand}" Height="30" />
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="4" Margin="0,5,0,5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Download Queue" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                <Button Grid.Column="1" Command="{Binding ClearQueueCommand}" ToolTip="Clear Queue" Style="{StaticResource MaterialDesignIconButton}" Foreground="Red" Width="28" Height="28">
+                    <materialDesign:PackIcon Kind="DeleteSweep" Width="18" Height="18" />
+                </Button>
+            </Grid>
+
+            <Border Grid.Row="1" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1" CornerRadius="4">
+            <ListView ItemsSource="{Binding DownloadQueue}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="2,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="90" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0,0,5,2">
+                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MaxWidth="280" Margin="0,0,10,0"/>
+                                <TextBlock Text="{Binding Resolution}" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="12" VerticalAlignment="Bottom" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,5,0">
+                                <ProgressBar Value="{Binding Progress}" Maximum="100" Height="4" Margin="0,0,0,2"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Status}" FontSize="11" Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                                    <TextBlock Text="{Binding DownloadSpeed}" Margin="5,0,0,0" FontSize="11" Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Command="{Binding DataContext.StartDownloadCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" ToolTip="Start" Style="{StaticResource MaterialDesignIconButton}" Width="28" Height="28">
+                                    <materialDesign:PackIcon Kind="Play" Width="14" Height="14"/>
+                                </Button>
+                                <Button Command="{Binding DataContext.PauseDownloadCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" ToolTip="Stop" Style="{StaticResource MaterialDesignIconButton}" Width="28" Height="28">
+                                    <materialDesign:PackIcon Kind="Stop" Width="14" Height="14"/>
+                                </Button>
+                                <Button Command="{Binding DataContext.RemoveDownloadCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" ToolTip="Remove" Style="{StaticResource MaterialDesignIconButton}" Foreground="Red" Width="28" Height="28">
+                                    <materialDesign:PackIcon Kind="Delete" Width="14" Height="14" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
+        </Grid>
+
+        <Grid Grid.Row="5">
+            <TextBlock Text="{Binding StatusMessage}" HorizontalAlignment="Left" FontWeight="SemiBold" FontSize="12" Foreground="White" />
+            <TextBlock Text="{Binding TotalDownloadSpeed}" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12" Foreground="White" />
+        </Grid>
+    </Grid>
+</Window>
